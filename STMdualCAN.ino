@@ -11,12 +11,12 @@ CanMsg msg ;
 
 void CAN_a_33_Setup(void)
 {
-/**/
+/*
   canBus.free();	
   canBus.cancel(CAN_TX_MBX0);	
   canBus.cancel(CAN_TX_MBX1);	
   canBus.cancel(CAN_TX_MBX2);	
-  rcc_clk_disable(RCC_GPIOB);
+//  rcc_clk_disable(RCC_GPIOB);
 /**/
   CAN_STATUS Stat ;
   canBus.map(CAN_GPIO_PA11_PA12);  
@@ -34,7 +34,7 @@ void CAN_a_33_Setup(void)
 
 void CAN_b_95_Setup(void)
 {
-/**/
+/*
   canBus.free();
   canBus.cancel(CAN_TX_MBX0);	
   canBus.cancel(CAN_TX_MBX1);	
@@ -59,14 +59,14 @@ CAN_TX_MBX CANsend(CanMsg *pmsg) // Should be moved to the library?!
 {
   CAN_TX_MBX mbx;
 
-  do 
-  {
+//  do 
+//  {
     mbx = canBus.send(pmsg) ;
 #ifdef USE_MULTITASK
     vTaskDelay( 1 ) ;                 // Infinite loops are not multitasking-friendly
 #endif
-  }
-  while(mbx == CAN_TX_NO_MBX) ;       // Waiting outbound frames will eventually be sent, unless there is a CAN bus failure.
+//  }
+//  while(mbx == CAN_TX_NO_MBX) ;       // Waiting outbound frames will eventually be sent, unless there is a CAN bus failure.
   return mbx ;
 }
 
@@ -132,7 +132,7 @@ void loop() {
 	  SendCANmessage(0x201,3,0x00,0xff,0x00);       
 	  delay(1000);
   }  
-  delay(3000);
+  delay(15000);
 /**/
 //  msgD0++;
 }
