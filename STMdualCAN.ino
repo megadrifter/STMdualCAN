@@ -11,13 +11,13 @@ CanMsg msg ;
 
 void CAN_a_33_Setup(void)
 {
-/*
+/**/
   canBus.free();	
   canBus.cancel(CAN_TX_MBX0);	
   canBus.cancel(CAN_TX_MBX1);	
   canBus.cancel(CAN_TX_MBX2);	
-//  rcc_clk_disable(RCC_GPIOB);
-*/
+  rcc_clk_disable(RCC_GPIOB);
+/**/
   CAN_STATUS Stat ;
   canBus.map(CAN_GPIO_PA11_PA12);  
   Stat = canBus.begin(CAN_SPEED_33, CAN_MODE_NORMAL);
@@ -34,12 +34,12 @@ void CAN_a_33_Setup(void)
 
 void CAN_b_95_Setup(void)
 {
-/*
+/**/
   canBus.free();
   canBus.cancel(CAN_TX_MBX0);	
   canBus.cancel(CAN_TX_MBX1);	
   canBus.cancel(CAN_TX_MBX2);	
-*/
+/**/
   CAN_STATUS Stat ;
   canBus.map(CAN_GPIO_PB8_PB9);
   Stat = canBus.begin(CAN_SPEED_95, CAN_MODE_NORMAL);
@@ -102,28 +102,25 @@ void SendCANmessage(long id=0x001, byte dlength=8, byte d0=0x00, byte d1=0x00, b
 byte msgD0 = 0x00;
 void setup() {        // Initialize the CAN module and prepare the message structures.
   pinMode(PC13, OUTPUT);
-  digitalWrite(PC13, HIGH);
+/*  digitalWrite(PC13, HIGH);
   delay(10);
   digitalWrite(PC13, LOW);
   delay(1000);
   digitalWrite(PC13, HIGH);
   delay(1000);
-
+*/
 }
 
 void loop() {
-/*
+/**/
 	  CAN_a_33_Setup();
-  for (msgD0=0;msgD0<=0xff;msgD0++)
-  {	  
+	  msgD0 = 0xDD;
 	  SendCANmessage(0x108,8,0x03,msgD0,msgD0,0x00,msgD0,msgD0,0x00,0x00);       
-	  SendCANmessage(0x5e8,5,0x81,0x00+msgD0,0x00+msgD0,0x00+msgD0);       
-	  delay(100);
-  }
-  delay(7000);
+	  SendCANmessage(0x5e8,8,0x81,msgD0,msgD0,msgD0);
+  delay(3000);
 /**/
       CAN_b_95_Setup();
-  for (msgD0=1;msgD0<13;msgD0++)
+  for (msgD0=1;msgD0<3;msgD0++)
   {	    
 	  delay(T_DELAY);
 	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
