@@ -112,6 +112,7 @@ void setup() {        // Initialize the CAN module and prepare the message struc
 }
 
 void loop() {
+/*
 	  CAN_a_33_Setup();
   for (msgD0=0;msgD0<=0xff;msgD0++)
   {	  
@@ -120,21 +121,21 @@ void loop() {
 	  delay(100);
   }
   delay(7000);
-/*
+/**/
       CAN_b_95_Setup();
   for (msgD0=1;msgD0<13;msgD0++)
   {	    
 	  delay(T_DELAY);
 	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
-	  delay(500);
+	  delay(10);
+	  SendCANmessage(0x201,3,0x00,0xff,0x00);       
+	  delay(1000);
 	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
-	  delay(500);
-	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
-	  delay(500);
-	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
-	  delay(500);
+	  delay(10);
+	  SendCANmessage(0x201,3,0x00,0xff,0x00);       
+	  delay(1000);
   }  
-  delay(7000);
-*/  
+  delay(3000);
+/**/
 //  msgD0++;
 }
