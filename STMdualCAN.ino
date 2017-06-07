@@ -19,6 +19,7 @@ void CAN_a_33_Setup(void)
 //  rcc_clk_disable(RCC_GPIOB);
 /**/
   CAN_STATUS Stat ;
+	afio_init(); // possibly, this will restart subsystem and make it work???
   canBus.map(CAN_GPIO_PA11_PA12);  
   Stat = canBus.begin(CAN_SPEED_33, CAN_MODE_NORMAL);
   canBus.filter(0, 0, 0);
