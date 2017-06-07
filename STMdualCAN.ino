@@ -1,77 +1,11 @@
 #include <HardwareCAN.h>
-//#include "changes.h"
-/*
- *
- */
-
 #define T_DELAY 10
-// Instanciation of CAN interface
 HardwareCAN canBus(CAN1_BASE);
 CanMsg msg ;
+byte counter;
+//enum {CAN33, CAN95} canswitch;
+int canswitch;
 
-void CAN_a_33_Setup(void)
-{
-/*
-  canBus.free();	
-  canBus.cancel(CAN_TX_MBX0);	
-  canBus.cancel(CAN_TX_MBX1);	
-  canBus.cancel(CAN_TX_MBX2);	
-//  rcc_clk_disable(RCC_GPIOB);
-/**/
-  CAN_STATUS Stat ;
-  canBus.map(CAN_GPIO_PA11_PA12);  
-  Stat = canBus.begin(CAN_SPEED_33, CAN_MODE_NORMAL);
-  canBus.filter(0, 0, 0);
-  canBus.set_irq_mode();
-  Stat = canBus.status();
-  if (Stat != CAN_OK)
-  {digitalWrite(PC13, LOW);
-   //delay(10000);
-   }
-// /* Your own error processing here */  ;  // Initialization failed
-//  delay(T_DELAY);
- }
-
-void CAN_b_95_Setup(void)
-{
-/*
-  canBus.free();
-  canBus.cancel(CAN_TX_MBX0);	
-  canBus.cancel(CAN_TX_MBX1);	
-  canBus.cancel(CAN_TX_MBX2);	
-/**/
-  CAN_STATUS Stat ;
-  canBus.map(CAN_GPIO_PB8_PB9);
-  Stat = canBus.begin(CAN_SPEED_95, CAN_MODE_NORMAL);
-  canBus.filter(0, 0, 0);
-  canBus.set_irq_mode();
-  Stat = canBus.status();
-  if (Stat != CAN_OK)
-  {digitalWrite(PC13, LOW);
-   //delay(10000);
-   }
-//     /* Your own error processing here */ ;   // Initialization failed
-//  delay(T_DELAY);
-}
-
-
-CAN_TX_MBX CANsend(CanMsg *pmsg) // Should be moved to the library?!
-{
-  CAN_TX_MBX mbx;
-
-//  do 
-//  {
-    mbx = canBus.send(pmsg) ;
-#ifdef USE_MULTITASK
-    vTaskDelay( 1 ) ;                 // Infinite loops are not multitasking-friendly
-#endif
-//  }
-//  while(mbx == CAN_TX_NO_MBX) ;       // Waiting outbound frames will eventually be sent, unless there is a CAN bus failure.
-  return mbx ;
-}
-
-// Send message
-// Prepare and send a frame containing some value 
 void SendCANmessage(long id=0x001, byte dlength=8, byte d0=0x00, byte d1=0x00, byte d2=0x00, byte d3=0x00, byte d4=0x00, byte d5=0x00, byte d6=0x00, byte d7=0x00)
 {
   // Initialize the message structure
@@ -91,48 +25,134 @@ void SendCANmessage(long id=0x001, byte dlength=8, byte d0=0x00, byte d1=0x00, b
   msg.Data[6] = d6 ;
   msg.Data[7] = d7 ;
 
-  digitalWrite(PC13, LOW);    // turn the onboard LED on
+//  digitalWrite(PC13, LOW);    // turn the onboard LED on
   CANsend(&msg) ;      // Send this frame            
-  digitalWrite(PC13, HIGH);   // turn the LED off 
+//  digitalWrite(PC13, HIGH);   // turn the LED off 
   delay(T_DELAY);  
 }
 
+ void CAN_33(void)
+{
+  CAN_STATUS Stat ;
+  canBus.map(CAN_GPIO_PB8_PB9);
+  Stat = canBus.begin(CAN_SPEED_33, CAN_MODE_NORMAL);
+  canBus.filter(0, 0, 0);
+  canBus.set_irq_mode();
+  Stat = canBus.status();
+  if (Stat != CAN_OK)
+  {digitalWrite(PC13, LOW);
+   delay(5000);}
+ }
 
-// The application program starts here
+void CAN_95(void)
+{
+  CAN_STATUS Stat ;
+  canBus.map(CAN_GPIO_PB8_PB9);
+  Stat = canBus.begin(CAN_SPEED_95, CAN_MODE_NORMAL);
+  canBus.filter(0, 0, 0);
+  canBus.set_irq_mode();
+  Stat = canBus.status();
+  if (Stat != CAN_OK)
+  {digitalWrite(PC13, LOW);
+   delay(5000);}
+//     /* Your own error processing here */ ;   // Initialization failed
+//  delay(T_DELAY);
+}
+
+ 
+ CAN_TX_MBX CANsend(CanMsg *pmsg) 
+{
+  CAN_TX_MBX mbx;
+
+  do 
+  {
+    mbx = canBus.send(pmsg) ;
+#ifdef USE_MULTITASK
+    vTaskDelay( 1 ) ;                 // Infinite loops are not multitasking-friendly
+#endif
+  }
+  while(mbx == CAN_TX_NO_MBX) ;       // Waiting outbound frames will eventually be sent, unless there is a CAN bus failure.
+  return mbx ;
+}
+
+
+void handler_pin(void);
+
 byte msgD0 = 0x00;
-void setup() {        // Initialize the CAN module and prepare the message structures.
-  pinMode(PC13, OUTPUT);
-/*  digitalWrite(PC13, HIGH);
+
+void setup()
+{
+	canswitch = 0;
+//	pinMode(28,INPUT);
+    pinMode(1, OUTPUT);
+    pinMode(2, INPUT);
+    pinMode(4, OUTPUT);
+    pinMode(3, INPUT);
+    pinMode(6, OUTPUT);
+    pinMode(5, INPUT);
+
+    // Setup pin Timer
+    Timer2.setChannel1Mode(TIMER_OUTPUTCOMPARE);
+    Timer2.setPeriod(5); // in microseconds (15 is OK for CAN_33, 5 for 95)
+    Timer2.setCompare1(1);      // overflow might be small
+    Timer2.attachCompare1Interrupt(handler_pin);
+
+	pinMode(PC13, OUTPUT);
+  digitalWrite(PC13, HIGH);
   delay(10);
   digitalWrite(PC13, LOW);
   delay(1000);
   digitalWrite(PC13, HIGH);
   delay(1000);
-*/
+  counter = 0;
 }
 
-void loop() {
-/**/
-	  CAN_a_33_Setup();
-	  msgD0 = 0xDD;
-	  SendCANmessage(0x108,8,0x03,msgD0,msgD0,0x00,msgD0,msgD0,0x00,0x00);       
-	  SendCANmessage(0x5e8,8,0x81,msgD0,msgD0,msgD0);
-  delay(3000);
-/**/
-      CAN_b_95_Setup();
-  for (msgD0=1;msgD0<3;msgD0++)
-  {	    
-	  delay(T_DELAY);
-	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
-	  delay(10);
-	  SendCANmessage(0x201,3,0x00,0xff,0x00);       
-	  delay(1000);
-	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
-	  delay(10);
-	  SendCANmessage(0x201,3,0x00,0xff,0x00);       
-	  delay(1000);
-  }  
-  delay(15000);
-/**/
-//  msgD0++;
+void a33() 
+{
+  delay(T_DELAY);
+  SendCANmessage(0x033,1,counter);       
+  delay(T_DELAY);
 }
+  
+void b95() 
+{
+  delay(T_DELAY);
+  SendCANmessage(0x095,1,counter);       
+  delay(T_DELAY);
+}
+
+void loop() 
+{
+
+	CAN_33();
+	canswitch = 0;
+	a33();
+
+	delay(T_DELAY);
+
+	CAN_95();
+	canswitch = 1;
+	b95();
+
+	delay(T_DELAY);
+	counter++;
+}
+  
+void handler_pin(void) {
+	
+switch(canswitch)
+	{
+	case 0:
+    digitalWrite(6, digitalRead(2));
+    digitalWrite(1, digitalRead(5));
+	break;	
+	
+	case 1:
+    digitalWrite(4, digitalRead(2));
+    digitalWrite(1, digitalRead(3));
+	break;	
+	}
+	
+} 
+  
+  
