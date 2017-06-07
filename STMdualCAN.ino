@@ -9,6 +9,7 @@
 HardwareCAN canBus(CAN1_BASE);
 CanMsg msg ;
 
+
 void CAN_a_33_Setup(void)
 {
 /*
@@ -112,28 +113,27 @@ void setup() {        // Initialize the CAN module and prepare the message struc
 */
 }
 
+
 void loop() {
 /**/
 	  CAN_a_33_Setup();
-	  msgD0 = 0xDD;
 	  SendCANmessage(0x108,8,0x03,msgD0,msgD0,0x00,msgD0,msgD0,0x00,0x00);       
 	  SendCANmessage(0x5e8,8,0x81,msgD0,msgD0,msgD0);
-  delay(3000);
+  delay(30);
 /**/
       CAN_b_95_Setup();
-  for (msgD0=1;msgD0<3;msgD0++)
+  for (byte msgD1=1;msgD1<3;msgD1++)
   {	    
 	  delay(T_DELAY);
-	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
-	  delay(10);
-	  SendCANmessage(0x201,3,0x00,0xff,0x00);       
-	  delay(1000);
-	  SendCANmessage(0x201,3,0x01,0xff,0x00);       
-	  delay(10);
-	  SendCANmessage(0x201,3,0x00,0xff,0x00);       
-	  delay(1000);
+	  SendCANmessage(0x201,3,0x01,0xff,msgD0);       
+	  delay(T_DELAY);
+	  SendCANmessage(0x201,3,0x00,0xff,msgD0);       
+	  delay(T_DELAY);
+	  SendCANmessage(0x201,3,0x01,0xff,msgD1);       
+	  delay(T_DELAY);
+	  SendCANmessage(0x201,3,0x00,0xff,msgD1);       
+	  delay(T_DELAY);
   }  
-  delay(15000);
 /**/
-//  msgD0++;
+msgD0++;
 }
